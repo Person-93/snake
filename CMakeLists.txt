@@ -14,7 +14,7 @@ set_version_vars ( "${VERSION}" "VERSION" )
 set ( version_file ${CMAKE_CURRENT_BINARY_DIR}/version.cpp )
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.cpp.in" "${version_file}" @ONLY )
 
-set ( CMAKE_CXX_STANDARDc 20 )
+set ( CMAKE_CXX_STANDARD 20 )
 set ( version_file ${CMAKE_CURRENT_BINARY_DIR}/version.cpp )
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.cpp.in" "${version_file}" @ONLY )
 
@@ -31,8 +31,11 @@ set ( Boost_USE_MULTITHREADED ON )
 set ( OpenGL_GL_PREFERENCE GLVND )
 
 find_package ( Threads REQUIRED )
+find_package ( Boost REQUIRED log )
 find_package ( OpenGL REQUIRED )
 find_package ( glfw3 REQUIRED )
+
+add_definitions ( -DBOOST_ALL_DYN_LINK )
 
 target_link_libraries ( glfw INTERFACE GL )
 
