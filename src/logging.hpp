@@ -12,7 +12,7 @@ enum SeverityLevel { info, warning, error, fatal };
 
 std::ostream& operator<<( std::ostream& stream, SeverityLevel level );
 
-#define LOG(severity) BOOST_LOG_SEV(logger, SeverityLevel:: severity)
+#define LOG( severity ) BOOST_LOG_SEV(logger, SeverityLevel:: severity)
 
 namespace logging {
     using Logger = boost::log::sources::severity_logger<SeverityLevel>;
@@ -20,4 +20,4 @@ namespace logging {
     Logger makeLogger( std::string_view name );
 }
 
-#define DEFINE_LOGGER( class_name ) static logger = ::logging::makeLogger(::boost::core::demangle(typeid(class_name)))
+#define DEFINE_LOGGER( class_name ) static logging::Logger logger = ::logging::makeLogger(::boost::core::demangle(typeid(class_name).name()))

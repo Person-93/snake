@@ -37,7 +37,7 @@ find_package ( glfw3 REQUIRED )
 
 add_definitions ( -DBOOST_ALL_DYN_LINK )
 
-target_link_libraries ( glfw INTERFACE GL )
+target_link_libraries ( glfw INTERFACE GL  )
 
 add_subdirectory ( vendor )
 add_subdirectory ( src )
