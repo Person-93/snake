@@ -8,7 +8,7 @@
 #include <typeinfo>
 #include <string_view>
 
-enum SeverityLevel { info, warning, error, fatal };
+enum SeverityLevel { debug, info, warning, error, fatal };
 
 std::ostream& operator<<( std::ostream& stream, SeverityLevel level );
 

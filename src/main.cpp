@@ -44,13 +44,14 @@ int main( int argc, char* argv[] ) {
             ImGui::SetNextWindowPos( { size.x / 2, size.y / 2 }, 0, { 0.5f, 0.5f } );
             ImGui::SetNextWindowSize( { gameWindowSize, gameWindowSize } );
             imGuiWrapper.window( config, [ & ] {
-                float boxSize = ImGui::GetWindowHeight() / 100;
-                auto  fill    = snake.GetFilledIn();
+                float boxSize  = ImGui::GetWindowHeight() / 100;
+                auto  fill     = snake.GetFilledIn();
                 if ( fill.at( 0 ) == foodLocation ) {
                     snake.Grow( 1 );
                     foodLocation = randomSpot();
+                    LOG( debug ) << "Food spawning at " << foodLocation.first << ", " << foodLocation.second;
                 }
-                auto drawList = ImGui::GetWindowDrawList();
+                auto  drawList = ImGui::GetWindowDrawList();
                 fillLocation( foodLocation.first, foodLocation.second, foodColor, drawList, boxSize );
                 for ( const auto& space: fill ) {
                     fillLocation( space.first, space.second, snakeColor, drawList, boxSize );

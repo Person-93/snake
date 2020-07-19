@@ -9,6 +9,8 @@
 
 std::ostream& operator<<( std::ostream& stream, SeverityLevel level ) {
     switch ( level ) {
+        case debug: stream << "DEBUG";
+            break;
         case info: stream << "INFO";
             break;
         case warning: stream << "WARNING";
