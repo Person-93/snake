@@ -138,6 +138,8 @@ struct ImGuiWrapper {
         static_assert( std::is_invocable_v<Function> );
         if ( ImGui::MenuItem( label.begin(), nullptr, selected, enabled )) function();
     }
+
+    int GetKey( int key );
 };
 
 #undef IMGUI_WRAPPER_WIDGET

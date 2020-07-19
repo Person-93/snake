@@ -144,6 +144,10 @@ ImGuiWrapper::DisableControls ImGuiWrapper::disableControls( bool disable ) {
     return ImGuiWrapper::DisableControls( disable );
 }
 
+int ImGuiWrapper::GetKey( int key ) {
+    return glfwGetKey( glfwWindow, key );
+}
+
 ImGuiWrapper::DisableControls::DisableControls( bool disable ) : disabled( false ) {
     if ( disable ) this->disable();
 }
