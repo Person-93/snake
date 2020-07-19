@@ -36,6 +36,7 @@ int main( int argc, char* argv[] ) {
         auto    foodLocation = randomSpot();
 
         auto lastAdvance = std::chrono::steady_clock::now();
+        bool gameRunning = true;
 
         while ( !imGuiWrapper.shouldClose() && shouldRun ) {
             auto  f              = imGuiWrapper.frame();
@@ -46,11 +47,29 @@ int main( int argc, char* argv[] ) {
             imGuiWrapper.window( config, [ & ] {
                 float boxSize  = ImGui::GetWindowHeight() / 100;
                 auto  fill     = snake.GetFilledIn();
-                if ( fill.at( 0 ) == foodLocation ) {
-                    snake.Grow( 1 );
-                    foodLocation = randomSpot();
-                    LOG( debug ) << "Food spawning at " << foodLocation.first << ", " << foodLocation.second;
+
+                if ( gameRunning ) {
+                    auto      head = fill.at( 0 );
+                    if ( head == foodLocation ) {
+                        snake.Grow( 1 );
+                        foodLocation = randomSpot();
+                        LOG( debug ) << "Food spawning at " << foodLocation.first << ", " << foodLocation.second;
+                    }
+                    // check if head is colliding with wall
+                    if ( head.first >= 100 || head.first < 0 || head.second >= 100 || head.second < 0 ) {
+                        gameRunning = false;
+                        LOG( debug ) << "Head collided with wall at " << head.first << ", " << head.second;
+                    }
+                    // check if head is colliding with tail
+                    for ( int i    = 1; i < fill.size(); ++i ) {
+                        if ( fill[ i ] == head ) {
+                            gameRunning = false;
+                            LOG( debug ) << "Head collided with tail at " << head.first << ", " << head.second;
+                            break;
+                        }
+                    }
                 }
+
                 auto  drawList = ImGui::GetWindowDrawList();
                 fillLocation( foodLocation.first, foodLocation.second, foodColor, drawList, boxSize );
                 for ( const auto& space: fill ) {
@@ -58,15 +77,17 @@ int main( int argc, char* argv[] ) {
                 }
             } );
 
-            if ( std::chrono::steady_clock::now() - lastAdvance >= std::chrono::milliseconds{ 200 } ) {
-                lastAdvance = std::chrono::steady_clock::now();
-                snake.Advance( 1 );
-            }
+            if ( gameRunning ) {
+                if ( std::chrono::steady_clock::now() - lastAdvance >= std::chrono::milliseconds{ 200 } ) {
+                    lastAdvance = std::chrono::steady_clock::now();
+                    snake.Advance( 1 );
+                }
 
-            if ( imGuiWrapper.GetKey( GLFW_KEY_UP ) == GLFW_PRESS ) snake.Up();
-            else if ( imGuiWrapper.GetKey( GLFW_KEY_DOWN ) == GLFW_PRESS ) snake.Down();
-            else if ( imGuiWrapper.GetKey( GLFW_KEY_RIGHT ) == GLFW_PRESS ) snake.Right();
-            else if ( imGuiWrapper.GetKey( GLFW_KEY_LEFT ) == GLFW_PRESS ) snake.Left();
+                if ( imGuiWrapper.GetKey( GLFW_KEY_UP ) == GLFW_PRESS ) snake.Up();
+                else if ( imGuiWrapper.GetKey( GLFW_KEY_DOWN ) == GLFW_PRESS ) snake.Down();
+                else if ( imGuiWrapper.GetKey( GLFW_KEY_RIGHT ) == GLFW_PRESS ) snake.Right();
+                else if ( imGuiWrapper.GetKey( GLFW_KEY_LEFT ) == GLFW_PRESS ) snake.Left();
+            }
         }
     }
     catch ( ... ) {
