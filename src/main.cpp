@@ -19,7 +19,7 @@ std::pair<int, int> randomSpot() {
     return { distribution( generator ), distribution( generator ) };
 }
 
-void fillLocation( int x, int y, ImColor color, ImDrawList* drawList, float boxSize );
+void fillLocation( int x, int y, ImColor color, ImDrawList* drawList, float boxSize, const ImVec2& screenCursorPos );
 
 int main( int argc, char* argv[] ) {
     logging::Logger logger = logging::makeLogger( "Main" );
@@ -45,8 +45,8 @@ int main( int argc, char* argv[] ) {
             ImGui::SetNextWindowPos( { size.x / 2, size.y / 2 }, 0, { 0.5f, 0.5f } );
             ImGui::SetNextWindowSize( { gameWindowSize, gameWindowSize } );
             imGuiWrapper.window( config, [ & ] {
-                float boxSize  = ImGui::GetWindowHeight() / 100;
-                auto  fill     = snake.GetFilledIn();
+                float boxSize = ImGui::GetWindowHeight() / 100;
+                auto  fill    = snake.GetFilledIn();
 
                 if ( gameRunning ) {
                     auto      head = fill.at( 0 );
@@ -70,10 +70,11 @@ int main( int argc, char* argv[] ) {
                     }
                 }
 
-                auto  drawList = ImGui::GetWindowDrawList();
-                fillLocation( foodLocation.first, foodLocation.second, foodColor, drawList, boxSize );
+                auto cursorPos = ImGui::GetCursorScreenPos();
+                auto drawList  = ImGui::GetWindowDrawList();
+                fillLocation( foodLocation.first, foodLocation.second, foodColor, drawList, boxSize, cursorPos );
                 for ( const auto& space: fill ) {
-                    fillLocation( space.first, space.second, snakeColor, drawList, boxSize );
+                    fillLocation( space.first, space.second, snakeColor, drawList, boxSize, cursorPos );
                 }
             } );
 
@@ -98,9 +99,8 @@ int main( int argc, char* argv[] ) {
     return 0;
 }
 
-void fillLocation( int x, int y, ImColor color, ImDrawList* drawList, float boxSize ) {
-    static auto p = ImGui::GetCursorScreenPos();
-    drawList->AddRectFilled( { p.x + x * boxSize, p.y + y * boxSize },
-                             { p.x + ( x + 1.f ) * boxSize, p.y + ( y + 1.f ) * boxSize },
+void fillLocation( int x, int y, ImColor color, ImDrawList* drawList, float boxSize, const ImVec2& screenCursorPos ) {
+    drawList->AddRectFilled( { screenCursorPos.x + x * boxSize, screenCursorPos.y + y * boxSize },
+                             { screenCursorPos.x + ( x + 1.f ) * boxSize, screenCursorPos.y + ( y + 1.f ) * boxSize },
                              color );
 }
