@@ -7,6 +7,7 @@
 #include "Snake.hpp"
 #include <random>
 #include <chrono>
+#include <array>
 #include <GLFW/glfw3.h>
 
 std::atomic_bool shouldRun = true;
@@ -29,19 +30,61 @@ int main( int argc, char* argv[] ) {
         LOG( info ) << "Running version " << version::longVersion();
         ImGuiWrapper imGuiWrapper{ "Snake" };
         WindowConfig config{ "game", nullptr, ImGuiWindowFlags_NoDecoration };
+        WindowConfig statusWindowConfig{ "status", nullptr, ImGuiWindowFlags_NoDecoration };
 
         ImColor snakeColor{ 143, 255, 102 };
         ImColor foodColor{ 101, 176, 169 };
         Snake   snake{ Snake::Direction::up, 50, 95, 3 };
         auto    foodLocation = randomSpot();
 
-        auto lastAdvance = std::chrono::steady_clock::now();
-        bool gameRunning = true;
+        auto           lastAdvance       = std::chrono::steady_clock::now();
+        bool           gameRunning       = false;
+        unsigned short userFriendlySpeed = 1;
+        unsigned short actualSpeed;
+
+        const auto CalculateSpeed = [ & ] {
+            const std::array<unsigned short, 10> speeds{ 0, 200, 150, 100, 80, 50, 50, 30, 20, 10 };
+            actualSpeed = speeds.at( userFriendlySpeed );
+        };
+        CalculateSpeed();
 
         while ( !imGuiWrapper.shouldClose() && shouldRun ) {
             auto  f              = imGuiWrapper.frame();
             auto  size           = ImGui::GetIO().DisplaySize;
             float gameWindowSize = size.y * .8f;
+
+            float statusWindowSize = size.y * .05f;
+
+            ImGui::SetNextWindowPos( { size.x / 2, size.y / 20 }, 0, { 0.5f, 0.5f } );
+            ImGui::SetNextWindowSize( { gameWindowSize, statusWindowSize } );
+            imGuiWrapper.window( statusWindowConfig, [ & ] {
+                {
+                    auto d     = imGuiWrapper.disableControls( gameRunning );
+                    auto style = ImGui::GetStyle();
+                    if ( ImGui::Button( "Start" )) {
+                        gameRunning = true;
+                        snake       = Snake{ Snake::Direction::up, 50, 95, 3 };
+                    }
+                    ImGui::SameLine();
+                    ImGui::Text( "Speed: %d", userFriendlySpeed );
+                    ImGui::SameLine( 0, style.ItemInnerSpacing.x );
+                    {
+                        auto e = imGuiWrapper.disableControls( userFriendlySpeed >= 9 );
+                        if ( ImGui::Button( "+" )) {
+                            ++userFriendlySpeed;
+                            CalculateSpeed();
+                        }
+                    }
+                    ImGui::SameLine( 0, style.ItemInnerSpacing.x );
+                    auto e = imGuiWrapper.disableControls( userFriendlySpeed <= 1 );
+                    if ( ImGui::Button( "-" )) {
+                        --userFriendlySpeed;
+                        CalculateSpeed();
+                    }
+                }
+            } );
+
+
             ImGui::SetNextWindowPos( { size.x / 2, size.y / 2 }, 0, { 0.5f, 0.5f } );
             ImGui::SetNextWindowSize( { gameWindowSize, gameWindowSize } );
             imGuiWrapper.window( config, [ & ] {
@@ -79,7 +122,7 @@ int main( int argc, char* argv[] ) {
             } );
 
             if ( gameRunning ) {
-                if ( std::chrono::steady_clock::now() - lastAdvance >= std::chrono::milliseconds{ 200 } ) {
+                if ( std::chrono::steady_clock::now() - lastAdvance >= std::chrono::milliseconds{ actualSpeed } ) {
                     lastAdvance = std::chrono::steady_clock::now();
                     snake.Advance( 1 );
                 }
