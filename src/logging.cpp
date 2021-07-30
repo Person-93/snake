@@ -36,7 +36,7 @@ namespace logging {
                         << "  ["
                         << expressions::attr<boost::log::attributes::current_thread_id::value_type>( "ThreadID" )
                         << "]  " << expressions::attr<SeverityLevel>( "Severity" )
-                        << "  " << expressions::attr<std::string_view>( "ClassName" )
+                        << "  " << expressions::attr<std::string>( "ClassName" )
                         << "  " << expressions::message
                            );
         sink->set_filter( expressions::attr<SeverityLevel>( "Severity" ) < SeverityLevel::error );
@@ -53,7 +53,7 @@ namespace logging {
                         << "  ["
                         << expressions::attr<boost::log::attributes::current_thread_id::value_type>( "ThreadID" )
                         << "]  " << expressions::attr<SeverityLevel>( "Severity" )
-                        << "  " << expressions::attr<std::string_view>( "ClassName" )
+                        << "  " << expressions::attr<std::string>( "ClassName" )
                         << "\n" << expressions::message
                         << "\n================================================================================\n"
                            );
@@ -65,7 +65,7 @@ namespace logging {
         Logger logger;
         logger.add_attribute( "TimeStamp", boost::log::attributes::local_clock{} );
         logger.add_attribute( "ThreadID", boost::log::attributes::current_thread_id{} );
-        logger.add_attribute( "ClassName", boost::log::attributes::constant<std::string_view>( name ));
+        logger.add_attribute( "ClassName", boost::log::attributes::constant<std::string>{ std::string{ name } });
         return logger;
     }
 }
