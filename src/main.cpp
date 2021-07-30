@@ -1,14 +1,16 @@
-#include "logging.hpp"
-#include "version.hpp"
-#include <boost/exception/diagnostic_information.hpp>
-#include <atomic>
-#include <csignal>
 #include "ImGuiWrapper.hpp"
 #include "Snake.hpp"
-#include <random>
-#include <chrono>
-#include <array>
+#include "logging.hpp"
+#include "version.hpp"
 #include <GLFW/glfw3.h>
+#include <array>
+#include <atomic>
+#include <boost/exception/diagnostic_information.hpp>
+#include <chrono>
+#include <csignal>
+#include <optional>
+#include <random>
+
 
 std::atomic_bool shouldRun = true;
 
@@ -22,9 +24,11 @@ std::pair<int, int> randomSpot() {
 
 void fillLocation( int x, int y, ImColor color, ImDrawList* drawList, float boxSize, const ImVec2& screenCursorPos );
 
-int main( int argc, char* argv[] ) {
-    logging::Logger logger = logging::makeLogger( "Main" );
+void HandleInput( ImGuiWrapper& imGuiWrapper, Snake& snake );
 
+logging::Logger logger = logging::makeLogger( "Main" );
+
+int main( int argc, char* argv[] ) {
     try {
         std::signal( SIGTERM, signalHandler );
         LOG( info ) << "Running version " << version::longVersion();
@@ -126,11 +130,7 @@ int main( int argc, char* argv[] ) {
                     lastAdvance = std::chrono::steady_clock::now();
                     snake.Advance( 1 );
                 }
-
-                if ( imGuiWrapper.GetKey( GLFW_KEY_UP ) == GLFW_PRESS ) snake.Up();
-                else if ( imGuiWrapper.GetKey( GLFW_KEY_DOWN ) == GLFW_PRESS ) snake.Down();
-                else if ( imGuiWrapper.GetKey( GLFW_KEY_RIGHT ) == GLFW_PRESS ) snake.Right();
-                else if ( imGuiWrapper.GetKey( GLFW_KEY_LEFT ) == GLFW_PRESS ) snake.Left();
+                HandleInput( imGuiWrapper, snake );
             }
         }
     }
@@ -146,4 +146,71 @@ void fillLocation( int x, int y, ImColor color, ImDrawList* drawList, float boxS
     drawList->AddRectFilled( { screenCursorPos.x + x * boxSize, screenCursorPos.y + y * boxSize },
                              { screenCursorPos.x + ( x + 1.f ) * boxSize, screenCursorPos.y + ( y + 1.f ) * boxSize },
                              color );
+}
+
+void HandleInput( ImGuiWrapper& imGuiWrapper, Snake& snake ) {
+    enum class Command {
+        none,
+        right,
+        left,
+        up,
+        down,
+    };
+    static std::optional< Command > deferredCommand{};
+    Snake::Response response;
+    if ( deferredCommand.has_value() ) {
+        switch ( *deferredCommand ) {
+            case Command::up:
+                response = snake.Up();
+                break;
+            case Command::down:
+                response = snake.Down();
+                break;
+            case Command::right:
+                response = snake.Right();
+                break;
+            case Command::left:
+                response = snake.Left();
+                break;
+            case Command::none:// this should never happen
+                throw std::runtime_error{ "Empty deferred command" };
+        }
+        if ( response == Snake::Response::process )
+            deferredCommand.reset();
+        return;
+    }
+
+    Command command =
+            imGuiWrapper.GetKey( GLFW_KEY_UP ) == GLFW_PRESS      ? Command::up
+            : imGuiWrapper.GetKey( GLFW_KEY_DOWN ) == GLFW_PRESS  ? Command::down
+            : imGuiWrapper.GetKey( GLFW_KEY_RIGHT ) == GLFW_PRESS ? Command::right
+            : imGuiWrapper.GetKey( GLFW_KEY_LEFT ) == GLFW_PRESS  ? Command::left
+                                                                  : Command::none;
+
+    switch ( command ) {
+        case Command::none:
+            return;
+        case Command::right:
+            response = snake.Right();
+            break;
+        case Command::left:
+            response = snake.Left();
+            break;
+        case Command::up:
+            response = snake.Up();
+            break;
+        case Command::down:
+            response = snake.Down();
+            break;
+    }
+
+    switch ( response ) {
+        case Snake::Response::ignore:// TODO add sound effect for ignored command
+        case Snake::Response::process:
+            break;
+        case Snake::Response::defer:
+            deferredCommand = command;
+            LOG( debug ) << "Command was deferred";
+            break;
+    }
 }
