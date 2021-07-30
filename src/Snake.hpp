@@ -1,18 +1,23 @@
 #pragma once
 
 #include <deque>
-#include <vector>
 #include <utility>
+#include <vector>
 
 class Snake {
 public:
-    enum class Direction { up, down, right, left };
+    enum class Direction { up,
+                           down,
+                           right,
+                           left };
 
-    enum class Response { ignore, process, defer };
+    enum class Response { ignore,
+                          process,
+                          defer };
 
     Snake( Direction direction, int x, int y, int length );
 
-    std::vector<std::pair<int, int>> GetFilledIn();
+    std::vector< std::pair< int, int > > GetFilledIn();
 
     void Advance( unsigned short spaces );
 
@@ -28,9 +33,9 @@ public:
 
 private:
     Direction direction;
-    int       x;
-    int       y;
-    int       length;
+    int x;
+    int y;
+    int length;
 
     struct Turn {
         int x;
@@ -39,8 +44,5 @@ private:
 
     friend bool operator==( const Snake::Turn& a, const Snake::Turn& b );
 
-    std::deque<Turn> turns;
+    std::deque< Turn > turns;
 };
-
-
-

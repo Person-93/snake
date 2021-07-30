@@ -1,18 +1,19 @@
-#include "ImGuiWrapper.hpp" // IWYU pragma: associated
-#include <GL/glcorearb.h>
-#include <GL/gl3w.h>
-#include <GLFW/glfw3.h>
+#include "ImGuiWrapper.hpp"// IWYU pragma: associated
 #include "imgui_internal.h"
-#include <examples/imgui_impl_opengl3.h>
-#include <examples/imgui_impl_glfw.h>
 #include "logging.hpp"
+#include <GL/gl3w.h>
+#include <GL/glcorearb.h>
+#include <GLFW/glfw3.h>
+#include <examples/imgui_impl_glfw.h>
+#include <examples/imgui_impl_opengl3.h>
+
 
 DEFINE_LOGGER( ImGuiWrapper );
 
 GLFWwindow* glfwWindow = nullptr;
-constexpr int width  = 1280;
-constexpr int height = 720;
-ImVec4* clear_color = nullptr;
+constexpr int width    = 1280;
+constexpr int height   = 720;
+ImVec4* clear_color    = nullptr;
 
 static struct {
     int error;
@@ -21,7 +22,7 @@ static struct {
 
 ImGuiWrapper::ImGuiWrapper( std::string_view title ) {
     if ( glfwWindow ) {
-        BOOST_THROW_EXCEPTION( std::runtime_error( "There can only be one instance of ImGuiWrapper" ));
+        BOOST_THROW_EXCEPTION( std::runtime_error( "There can only be one instance of ImGuiWrapper" ) );
     }
     if ( !clear_color ) clear_color = new ImVec4{ 0.45f, 0.55f, 0.60f, 1.00f };
 
@@ -31,11 +32,11 @@ ImGuiWrapper::ImGuiWrapper( std::string_view title ) {
         err.description = description;
     } );
 
-    if ( !glfwInit()) {
+    if ( !glfwInit() ) {
         std::ostringstream ss;
         ss << "GLFW Error " << err.error << ": " << err.description;
 
-        BOOST_THROW_EXCEPTION( std::runtime_error( ss.str()));
+        BOOST_THROW_EXCEPTION( std::runtime_error( ss.str() ) );
     }
 
     // GL 3.0 + GLSL 130
@@ -48,13 +49,13 @@ ImGuiWrapper::ImGuiWrapper( std::string_view title ) {
     // Create window with graphics context
     glfwWindow = glfwCreateWindow( width, height, title.begin(), nullptr, nullptr );
     if ( glfwWindow == nullptr ) {
-        BOOST_THROW_EXCEPTION( std::runtime_error( "Unable to create GLFW window" ));
+        BOOST_THROW_EXCEPTION( std::runtime_error( "Unable to create GLFW window" ) );
     }
 
     glfwMakeContextCurrent( glfwWindow );
-    glfwSwapInterval( 1 ); // Enable vsync
+    glfwSwapInterval( 1 );// Enable vsync
 
-    if ( gl3wInit()) {
+    if ( gl3wInit() ) {
         static struct {
             int major, minor;
         } version;
@@ -63,7 +64,7 @@ ImGuiWrapper::ImGuiWrapper( std::string_view title ) {
         std::ostringstream ss;
         ss << "Failed to initialize OpenGL loader. Version is: " << version.major << '.' << version.minor;
 
-        BOOST_THROW_EXCEPTION( std::runtime_error( ss.str()));
+        BOOST_THROW_EXCEPTION( std::runtime_error( ss.str() ) );
     }
 
     // Setup Dear ImGui context
@@ -71,7 +72,7 @@ ImGuiWrapper::ImGuiWrapper( std::string_view title ) {
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
     (void) io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;// Enable Keyboard Controls
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL( glfwWindow, true );
@@ -97,7 +98,7 @@ bool inFrame = false;
 
 ImGuiWrapper::Frame::Frame() {
     if ( inFrame ) {
-        BOOST_THROW_EXCEPTION( std::runtime_error( "Cannot start new frame until previous frame is completed" ));
+        BOOST_THROW_EXCEPTION( std::runtime_error( "Cannot start new frame until previous frame is completed" ) );
     }
     inFrame = true;
 
@@ -123,7 +124,7 @@ ImGuiWrapper::Frame::~Frame() {
     glViewport( 0, 0, display_w, display_h );
     glClearColor( clear_color->x, clear_color->y, clear_color->z, clear_color->w );
     glClear( GL_COLOR_BUFFER_BIT );
-    ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData());
+    ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
 
     glfwMakeContextCurrent( glfwWindow );
     glfwSwapBuffers( glfwWindow );
@@ -132,12 +133,12 @@ ImGuiWrapper::Frame::~Frame() {
 }
 
 bool ImGuiWrapper::shouldClose() {
-    return bool( glfwWindowShouldClose( glfwWindow ));
+    return bool( glfwWindowShouldClose( glfwWindow ) );
 }
 
 void ImGuiWrapper::setWindowTitle( std::string_view title ) {
     LOG( info ) << "Window title was set to " << title;
-    glfwSetWindowTitle( glfwWindow, title.begin());
+    glfwSetWindowTitle( glfwWindow, title.begin() );
 }
 
 ImGuiWrapper::DisableControls ImGuiWrapper::disableControls( bool disable ) {

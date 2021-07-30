@@ -16,8 +16,8 @@ std::atomic_bool shouldRun = true;
 
 extern "C" void signalHandler( int ) { shouldRun = false; }
 
-std::pair<int, int> randomSpot() {
-    std::mt19937                    generator{ std::random_device{}() };
+std::pair< int, int > randomSpot() {
+    std::mt19937 generator{ std::random_device{}() };
     std::uniform_int_distribution<> distribution{ 0, 99 };
     return { distribution( generator ), distribution( generator ) };
 }
@@ -38,23 +38,23 @@ int main( int argc, char* argv[] ) {
 
         ImColor snakeColor{ 143, 255, 102 };
         ImColor foodColor{ 101, 176, 169 };
-        Snake   snake{ Snake::Direction::up, 50, 95, 3 };
-        auto    foodLocation = randomSpot();
+        Snake snake{ Snake::Direction::up, 50, 95, 3 };
+        auto foodLocation = randomSpot();
 
-        auto           lastAdvance       = std::chrono::steady_clock::now();
-        bool           gameRunning       = false;
+        auto lastAdvance                 = std::chrono::steady_clock::now();
+        bool gameRunning                 = false;
         unsigned short userFriendlySpeed = 1;
         unsigned short actualSpeed;
 
         const auto CalculateSpeed = [ & ] {
-            const std::array<unsigned short, 10> speeds{ 0, 200, 150, 100, 80, 50, 50, 30, 20, 10 };
+            const std::array< unsigned short, 10 > speeds{ 0, 200, 150, 100, 80, 50, 50, 30, 20, 10 };
             actualSpeed = speeds.at( userFriendlySpeed );
         };
         CalculateSpeed();
 
         while ( !imGuiWrapper.shouldClose() && shouldRun ) {
-            auto  f              = imGuiWrapper.frame();
-            auto  size           = ImGui::GetIO().DisplaySize;
+            auto f               = imGuiWrapper.frame();
+            auto size            = ImGui::GetIO().DisplaySize;
             float gameWindowSize = size.y * .8f;
 
             float statusWindowSize = size.y * .05f;
@@ -65,7 +65,7 @@ int main( int argc, char* argv[] ) {
                 {
                     auto d     = imGuiWrapper.disableControls( gameRunning );
                     auto style = ImGui::GetStyle();
-                    if ( ImGui::Button( "Start" )) {
+                    if ( ImGui::Button( "Start" ) ) {
                         gameRunning = true;
                         snake       = Snake{ Snake::Direction::up, 50, 95, 3 };
                     }
@@ -74,14 +74,14 @@ int main( int argc, char* argv[] ) {
                     ImGui::SameLine( 0, style.ItemInnerSpacing.x );
                     {
                         auto e = imGuiWrapper.disableControls( userFriendlySpeed >= 9 );
-                        if ( ImGui::Button( "+" )) {
+                        if ( ImGui::Button( "+" ) ) {
                             ++userFriendlySpeed;
                             CalculateSpeed();
                         }
                     }
                     ImGui::SameLine( 0, style.ItemInnerSpacing.x );
                     auto e = imGuiWrapper.disableControls( userFriendlySpeed <= 1 );
-                    if ( ImGui::Button( "-" )) {
+                    if ( ImGui::Button( "-" ) ) {
                         --userFriendlySpeed;
                         CalculateSpeed();
                     }
@@ -93,10 +93,10 @@ int main( int argc, char* argv[] ) {
             ImGui::SetNextWindowSize( { gameWindowSize, gameWindowSize } );
             imGuiWrapper.window( config, [ & ] {
                 float boxSize = ImGui::GetWindowHeight() / 100;
-                auto  fill    = snake.GetFilledIn();
+                auto fill     = snake.GetFilledIn();
 
                 if ( gameRunning ) {
-                    auto      head = fill.at( 0 );
+                    auto head = fill.at( 0 );
                     if ( head == foodLocation ) {
                         snake.Grow( 1 );
                         foodLocation = randomSpot();
@@ -108,7 +108,7 @@ int main( int argc, char* argv[] ) {
                         LOG( debug ) << "Head collided with wall at " << head.first << ", " << head.second;
                     }
                     // check if head is colliding with tail
-                    for ( int i    = 1; i < fill.size(); ++i ) {
+                    for ( int i = 1; i < fill.size(); ++i ) {
                         if ( fill[ i ] == head ) {
                             gameRunning = false;
                             LOG( debug ) << "Head collided with tail at " << head.first << ", " << head.second;
@@ -120,7 +120,7 @@ int main( int argc, char* argv[] ) {
                 auto cursorPos = ImGui::GetCursorScreenPos();
                 auto drawList  = ImGui::GetWindowDrawList();
                 fillLocation( foodLocation.first, foodLocation.second, foodColor, drawList, boxSize, cursorPos );
-                for ( const auto& space: fill ) {
+                for ( const auto& space : fill ) {
                     fillLocation( space.first, space.second, snakeColor, drawList, boxSize, cursorPos );
                 }
             } );
@@ -133,8 +133,7 @@ int main( int argc, char* argv[] ) {
                 HandleInput( imGuiWrapper, snake );
             }
         }
-    }
-    catch ( ... ) {
+    } catch ( ... ) {
         LOG( fatal ) << boost::current_exception_diagnostic_information( true );
         return -1;
     }

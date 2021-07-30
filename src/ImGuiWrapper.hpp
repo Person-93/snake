@@ -1,32 +1,33 @@
 #pragma once
 
-#include <string_view>
+#include "imgui.h"
 #include <functional>
 #include <string>
-#include "imgui.h"
+#include <string_view>
 
 #define IMGUI_WRAPPER_WIDGET( widget, close, AlwaysClose ) \
-class widget {                               \
-public:                                      \
-    CONSTRUCTORS                             \
-    ~widget() {                              \
-        if( AlwaysClose || opened ) close(); \
-    }                                        \
-    operator bool() & { return opened; }     \
-private:                                     \
-    bool opened;                             \
-}
+    class widget {                                         \
+    public:                                                \
+        CONSTRUCTORS                                       \
+        ~widget() {                                        \
+            if ( AlwaysClose || opened ) close();          \
+        }                                                  \
+        operator bool() & { return opened; }               \
+                                                           \
+    private:                                               \
+        bool opened;                                       \
+    }
 
 struct WindowConfig {
     std::string title;
-    bool* open = nullptr;
+    bool* open             = nullptr;
     ImGuiWindowFlags flags = 0;
 };
 
 struct ChildWindowConfig {
-    std::string      str_id;
-    ImVec2           size;
-    bool             border;
+    std::string str_id;
+    ImVec2 size;
+    bool border;
     ImGuiWindowFlags flags;
 };
 
@@ -49,6 +50,7 @@ struct ImGuiWrapper {
         Frame();
 
         friend ImGuiWrapper;
+
     public:
         ~Frame();
     };
@@ -57,11 +59,12 @@ struct ImGuiWrapper {
 
     template< typename Function >
     bool window( WindowConfig& config, Function function ) {
-        static_assert( std::is_invocable_v<Function> );
+        static_assert( std::is_invocable_v< Function > );
 
-#define CONSTRUCTORS Window(std::string_view title, bool* open, ImGuiWindowFlags flags) { \
-    opened = ImGui::Begin(title.begin(), open, flags); \
-}
+#define CONSTRUCTORS                                                       \
+    Window( std::string_view title, bool* open, ImGuiWindowFlags flags ) { \
+        opened = ImGui::Begin( title.begin(), open, flags );               \
+    }
         IMGUI_WRAPPER_WIDGET( Window, ImGui::End, true );
 #undef CONSTRUCTORS
 
@@ -73,11 +76,12 @@ struct ImGuiWrapper {
 
     template< typename Function >
     bool childWindow( ChildWindowConfig& config, Function function ) {
-        static_assert( std::is_invocable_v<Function> );
+        static_assert( std::is_invocable_v< Function > );
 
-#define CONSTRUCTORS ChildWindow(std::string_view str_id, const ImVec2& size, bool border, ImGuiWindowFlags flags) { \
-    opened = ImGui::BeginChild( str_id.begin(), size, border, flags ); \
-}
+#define CONSTRUCTORS                                                                                  \
+    ChildWindow( std::string_view str_id, const ImVec2& size, bool border, ImGuiWindowFlags flags ) { \
+        opened = ImGui::BeginChild( str_id.begin(), size, border, flags );                            \
+    }
         IMGUI_WRAPPER_WIDGET( ChildWindow, ImGui::EndChild, true );
 #undef CONSTRUCTORS
 
@@ -107,11 +111,12 @@ struct ImGuiWrapper {
 
     template< typename Function >
     bool mainMenu( Function function ) {
-        static_assert( std::is_invocable_v<Function> );
+        static_assert( std::is_invocable_v< Function > );
 
-#define CONSTRUCTORS MainMenu() {       \
-    opened = ImGui::BeginMainMenuBar(); \
-}
+#define CONSTRUCTORS                        \
+    MainMenu() {                            \
+        opened = ImGui::BeginMainMenuBar(); \
+    }
         IMGUI_WRAPPER_WIDGET( MainMenu, ImGui::EndMainMenuBar, false );
 #undef CONSTRUCTORS
 
@@ -122,11 +127,12 @@ struct ImGuiWrapper {
 
     template< typename Function >
     void menu( std::string_view label, bool enabled, Function function ) {
-        static_assert( std::is_invocable_v<Function> );
+        static_assert( std::is_invocable_v< Function > );
 
-#define CONSTRUCTORS Menu( std::string_view label, bool enabled ) { \
-    opened = ImGui::BeginMenu( label.begin(), enabled );            \
-}
+#define CONSTRUCTORS                                         \
+    Menu( std::string_view label, bool enabled ) {           \
+        opened = ImGui::BeginMenu( label.begin(), enabled ); \
+    }
         IMGUI_WRAPPER_WIDGET( Menu, ImGui::EndMenu, false );
 #undef CONSTRUCTORS
 
@@ -135,8 +141,8 @@ struct ImGuiWrapper {
 
     template< typename Function >
     void menuItem( std::string_view label, bool selected, bool enabled, Function function ) {
-        static_assert( std::is_invocable_v<Function> );
-        if ( ImGui::MenuItem( label.begin(), nullptr, selected, enabled )) function();
+        static_assert( std::is_invocable_v< Function > );
+        if ( ImGui::MenuItem( label.begin(), nullptr, selected, enabled ) ) function();
     }
 
     int GetKey( int key );

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <string_view>
 #include <sstream>
+#include <string_view>
 
 struct version {
     static const unsigned long long major;
     static const unsigned long long minor;
     static const unsigned long long patch;
-    static const std::string_view   tweak;
+    static const std::string_view tweak;
 
     static std::string_view shortVersion() {
         static std::string version = []() -> std::string {
