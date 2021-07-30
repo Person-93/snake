@@ -1,4 +1,11 @@
 #include "Snake.hpp"
+#include "logging.hpp"
+
+DEFINE_LOGGER( Snake );// NOLINT(cert-err58-cpp)
+
+bool operator==( const Snake::Turn& a, const Snake::Turn& b ) {
+    return a.x == b.x && a.y == b.y;
+}
 
 Snake::Snake( Snake::Direction direction, int x, int y, int length ) : direction{ direction },
                                                                        x{ x },
@@ -54,28 +61,52 @@ void Snake::Advance( unsigned short spaces ) {
     // TODO remove trailing turns
 }
 
-void Snake::Up() {
-    if ( direction == Direction::up || direction == Direction::down ) return;
+Snake::Response Snake::Up() {
+    if ( direction == Direction::up || direction == Direction::down )
+        return Response::ignore;
+    if ( turns.front() == Turn{ x, y } ) {
+        LOG( debug ) << "Deferred UP command";
+        return Response::defer;
+    }
     turns.push_front( { x, y } );
     direction = Direction::up;
+    return Response::process;
 }
 
-void Snake::Down() {
-    if ( direction == Direction::up || direction == Direction::down ) return;
+Snake::Response Snake::Down() {
+    if ( direction == Direction::up || direction == Direction::down )
+        return Response::ignore;
+    if ( turns.front() == Turn{ x, y } ) {
+        LOG( debug ) << "Deferred DOWN command";
+        return Response::defer;
+    }
     turns.push_front( { x, y } );
     direction = Direction::down;
+    return Response::process;
 }
 
-void Snake::Right() {
-    if ( direction == Direction::right || direction == Direction::left ) return;
+Snake::Response Snake::Right() {
+    if ( direction == Direction::right || direction == Direction::left )
+        return Response::ignore;
+    if ( turns.front() == Turn{ x, y } ) {
+        LOG( debug ) << "Deferred RIGHT command";
+        return Response::defer;
+    }
     turns.push_front( { x, y } );
     direction = Direction::right;
+    return Response::process;
 }
 
-void Snake::Left() {
-    if ( direction == Direction::right || direction == Direction::left ) return;
+Snake::Response Snake::Left() {
+    if ( direction == Direction::right || direction == Direction::left )
+        return Response::ignore;
+    if ( turns.front() == Turn{ x, y } ) {
+        LOG( debug ) << "Deferred LEFT command";
+        return Response::defer;
+    }
     turns.push_front( { x, y } );
     direction = Direction::left;
+    return Response::process;
 }
 
 void Snake::Grow( unsigned short spaces ) {

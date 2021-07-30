@@ -8,19 +8,21 @@ class Snake {
 public:
     enum class Direction { up, down, right, left };
 
+    enum class Response { ignore, process, defer };
+
     Snake( Direction direction, int x, int y, int length );
 
     std::vector<std::pair<int, int>> GetFilledIn();
 
     void Advance( unsigned short spaces );
 
-    void Up();
+    Response Up();
 
-    void Down();
+    Response Down();
 
-    void Right();
+    Response Right();
 
-    void Left();
+    Response Left();
 
     void Grow( unsigned short spaces );
 
@@ -34,6 +36,8 @@ private:
         int x;
         int y;
     };
+
+    friend bool operator==( const Snake::Turn& a, const Snake::Turn& b );
 
     std::deque<Turn> turns;
 };
